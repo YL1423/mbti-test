@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>趣味MBTI人格测试</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei",sans-serif;
+        }
+        body{
+            background: linear-gradient(135deg,#a8c8ff,#e8c8f8);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container{
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .card{
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        h1{
+            text-align: center;
+            color: #6b62b9;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+        .progress-box{
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-bar{
+            height: 100%;
+            background: linear-gradient(90deg,#829dff,#c398f5);
+            width: 5%;
+            transition: 0.3s ease;
+        }
+        .question-title{
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .option-item{
+            border: 2px solid #e9edfb;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .option-item:hover{
+            border-color: #b3c4ff;
+            background: #f6f8ff;
+        }
+        .option-item.active{
+            border-color: #7b8fff;
+            background: #f0f4ff;
+        }
+        .btn-box{
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+        }
+        button{
+            padding: 12px 28px;
+            border-radius: 30px;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+        .prev-btn{
+            background: #e7eaf5;
+            color: #666;
+        }
+        .next-btn,.submit-btn{
+            background: linear-gradient(135deg,#829dff,#b294f2);
+            color: white;
+        }
+        button:hover{
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .result-page{
+            display: none;
+        }
+        .result-title{
+            font-size: 28px;
+            color: #7b6cd8;
+            text-align: center;
+            font-weight: bold;
+            margin:15px 0;
+        }
+        .result-desc{
+            padding: 20px;
+            background: #f7f4ff;
+            border-radius: 15px;
+            line-height: 1.8;
+            color: #444;
+            margin:20px 0;
+        }
+        .copy-btn{
+            width: 100%;
+            margin-top:15px;
+        }
+        .tip{
+            text-align: center;
+            color:#999;
+            font-size:14px;
+            margin-top:15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>趣味MBTI人格测试</h1>
+            <div class="progress-box">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+            <div class="test-page" id="testPage">
+                <div class="question-title" id="question"></div>
+                <div class="option-list" id="optionList"></div>
+                <div class="btn-box">
+                    <button class="prev-btn" id="prevBtn">上一题</button>
+                    <button class="next-btn" id="nextBtn">下一题</button>
+                </div>
+            </div>
+            <div class="result-page" id="resultPage">
+                <div class="result-title" id="typeText"></div>
+                <div class="result-desc" id="resultInfo"></div>
+                <button class="copy-btn" id="copyBtn">一键复制测试结果</button>
+                <p class="tip">本测试仅供娱乐，仅供参考</p >
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //一共15道测试题目
+        const questionList = [
+            {q:"1.平时聚会里你属于？",opt:["A.主动热闹社牛","B.安静不爱说话","C.只会附和他人","D.只和熟人交流"]},
+            {q:"2.心情不好的时候你会？",opt:["A.找人倾诉烦恼","B.自己独自消化","C.胡思乱想内耗","D.听歌转移情绪"]},
+            {q:"3.做选择你的性格？",opt:["A.做事果断干脆","B.容易纠结犹豫","C.听从别人意见","D.全凭直觉感受"]},
+            {q:"4.更喜欢哪种生活模式？",opt:["A.热闹丰富多彩","B.安静平淡简单","C.自由不受约束","D.规律自律生活"]},
+            {q:"5.思考问题优先看重？",opt:["A.理智客观道理","B.别人情绪感受","C.利弊得失好坏","D.自己内心喜好"]},
+            {q:"6.空闲放假一般干什么？",opt:["A.出门游玩散心","B.宅家独处发呆","C.看书提升自己","D.休闲打发时间"]},
+            {q:"7.别人对你最大印象？",opt:["A.开朗活泼外向","B.温柔慢热内向","C.冷静理智通透","D.佛系看淡一切"]},
+            {q:"8.对待做事规划方式？",opt:["A.提前安排计划","B.临时随心所欲","C.简单粗略规划","D.从来不做计划"]},
+            {q:"9.和朋友产生矛盾会？",opt:["A.主动和好沟通","B.沉默冷战不语","C.理性分清对错","D.无所谓不在意"]},
+            {q:"10.面对新鲜事物态度？",opt:["A.愿意大胆尝试","B.比较保守怀旧","C.谨慎慢慢接受","D.感兴趣才了解"]},
+            {q:"11.你的思考模式偏向？",opt:["A.现实务实思维","B.感性幻想浪漫","C.多角度换位思考","D.简单直白想法"]},
+            {q:"12.压力大的时候状态？",opt:["A.自我调节解压","B.容易难过emo","C.咬牙努力坚持","D.直接摆烂放松"]},
+            {q:"13.交朋友最看重什么？",opt:["A.相处舒服合拍","B.人品三观端正","C.情商能力优秀","D.性格简单纯粹"]},
+            {q:"14.平时待人处事风格？",opt:["A.行动能力很强","B.想法多于行动","C.稳重慢条斯理","D.随性懒散佛系"]},
+            {q:"15.你骨子里真正性格？",opt:["A.热烈外向人格","B.柔软内向人格","C.清醒理智人格","D.洒脱自由人格"]}
+        ];
+
+        //16种人格结果文案
+        const resultList = [
+            {type:"ENFP 快乐追梦家",desc:"你性格开朗温暖，想象力丰富，内心温柔浪漫，待人真诚善良。热爱自由不喜欢被束缚，共情能力超强，善于理解别人，骨子里纯粹又敏感，永远对生活抱有热爱，是身边所有人的小太阳。"},
+            {type:"INFP 治愈理想家",desc:"温柔内敛细腻敏感，内心拥有丰富的精神世界，三观干净纯粹。不喜争抢看淡世俗，共情力极强，习惯独自消化情绪，外表安静淡然，内心温柔且坚定，永远保留一份天真。"},
+            {type:"ESTP 洒脱冒险家",desc:"性格直率爽快，情商很高头脑灵活，为人处事通透现实。适应能力极强，胆大果断随性洒脱，擅长社交，做事利落不拖泥带水，活得清醒又自在。"},
+            {type:"ISTP 清冷观察者",desc:"冷静理智低调内敛，心思缜密观察力极强。不爱喧闹的人群，偏爱独处，遇事沉着冷静，看淡人情世故，性格冷淡自持，拥有自己独有的世界观。"},
+            {type:"ESFJ 温柔守护者",desc:"善良体贴懂得包容，情商出众擅长照顾他人情绪。待人温和大方人缘很好，责任心十足，心思细腻顾家专一，愿意迁就别人，是非常靠谱温柔的人格。"},
+            {type:"ISFJ 细腻守护者",desc:"内敛温柔踏实稳重，性格乖巧随和，习惯性体谅所有人。内心细腻敏感不善表达，默默付出从不计较，性格慢热专一，内心柔软十分重感情。"},
+            {type:"ENTJ 王者领导者",desc:"天生理智强势，格局远大头脑清晰。做事果断自律性强，拥有超强判断力，野心从容自信，遇事冷静掌控全局，自带成熟强大气场。"},
+            {type:"INTJ 理智策划家",desc:"高冷清醒独立自省，极度理性看透人心。喜欢独处不喜合群，思维缜密眼光长远，不爱无效社交，内心清醒孤傲，永远自我沉淀。"},
+            {type:"ENFJ 温柔领袖者",desc:"温柔通透情商满分，善于共情包容众生。待人宽厚大度，懂得换位思考，温柔且有主见，温暖又理智，能够治愈身边所有人。"},
+            {type:"INFJ 神秘灵魂家",desc:"小众高级的人格，通透看透世间百态。外表平和安静，内心思虑很深，精神追求极高，天生敏感共情强，自带清冷温柔氛围感。"},
+            {type:"ESTJ干练管理者",desc:"现实稳重行事规矩，性格大方直率。做事认真负责条理清晰，做人踏实务实，原则感很强，成熟稳重，做事可靠值得信赖。"},
+            {type:"ISTJ沉稳务实者",desc:"安静踏实安分守己，性格沉稳内敛。做事细心严谨遵守规则，不喜变动生活安稳，内心专一重情义，踏实本分不爱折腾。"},
+            {type:"ESFP热烈乐天派",desc:"活泼可爱元气满满，天生乐观无忧无虑。热爱生活享受当下，性格活泼外向，心态很好烦恼很少，永远鲜活热烈。"},
+            {type:"ISFP浪漫艺术家",desc:"温柔小众感性浪漫，气质干净独特。审美极佳心思细腻，随性佛系不爱争抢，偏爱安静美好的事物，骨子里温柔又孤僻。"},
+            {type:"ENTP趣味思辨家",desc:"聪明灵动脑洞很大，性格幽默通透。思维跳跃善于思考，不拘束不呆板，社交能力强，随性叛逆，永远拥有新鲜感。"},
+            {type:"INTP清冷思考家",desc:"佛系淡漠思维聪慧，喜欢独自思考人生。看淡人情往来，性格慵懒随性，理性大于感性，不爱世俗纷扰，简单自在生活。"}
+        ];
+
+        let nowIndex = 0;
+        let scoreArr = [];
+        const testPage = document.getElementById('testPage');
+        const resultPage = document.getElementById('resultPage');
+        const questionDom = document.getElementById('question');
+        const optionDom = document.getElementById('optionList');
+        const progressDom = document.getElementById('progress');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const typeText = document.getElementById('typeText');
+        const resultInfo = document.getElementById('resultInfo');
+        const copyBtn = document.getElementById('copyBtn');
+
+        function renderQues(){
+            let item = questionList[nowIndex];
+            questionDom.innerText = item.q;
+            optionDom.innerHTML = "";
+            let progress = (nowIndex+1)/questionList.length * 100;
+            progressDom.style.width = progress+"%";
+
+            item.opt.forEach((val,idx)=>{
+                let div = document.createElement("div");
+                div.className = "option-item";
+                div.innerText = val;
+                div.onclick = function(){
+                    document.querySelectorAll(".option-item").forEach(i=>i.classList.remove("active"));
+                    this.classList.add("active");
+                    scoreArr[nowIndex] = idx;
+                }
+                optionDom.appendChild(div);
+            })
+            prevBtn.style.display = nowIndex==0 ? 'none' : 'block';
+            nextBtn.innerText = nowIndex == questionList.length-1 ? "提交查看结果" : "下一题";
+        }
+
+        nextBtn.addEventListener('click',function(){
+            if(scoreArr[nowIndex]==undefined){
+                alert("请先选择一个答案");
+                return;
+            }
+            if(nowIndex < questionList.length-1){
+                nowIndex++;
+                renderQues();
+            }else{
+                getResult();
+            }
+        })
+
+        prevBtn.addEventListener('click',function(){
+            if(nowIndex>0){
+                nowIndex--;
+                renderQues();
+            }
+        })
+
+        function getResult(){
+            let total = scoreArr.reduce((a,b)=>a+b,0);
+            let resIndex = total % resultList.length;
+            let res = resultList[resIndex];
+            typeText.innerText = res.type;
+            resultInfo.innerText = res.desc;
+            testPage.style.display = 'none';
+            resultPage.style.display = 'block';
+        }
+
+        copyBtn.onclick = function(){
+            let copyText = "我的MBTI人格测试结果：\n"+typeText.innerText+"\n"+resultInfo.innerText;
+            navigator.clipboard.writeText(copyText).then(()=>{
+                alert("结果复制成功，可以分享好友");
+            })
+        }
+        renderQues();
+    </script>
+</body>
+</html>
